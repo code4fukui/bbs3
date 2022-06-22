@@ -41,17 +41,19 @@ window.onload = async () => {
       div.innerHTML = `<span class=date>${enc(d.date)}</span>
        by <span class=name>${d.name}</span>
        <span class=addr>${d.addr}</span>
-       <button class=remove>削除</button>
+       ${d.removable ? '<button class=remove>削除</button>' : ""}
         <div class=body>${addLinkTag(enc(d.body))}</div>`
       container.appendChild(div);
       const rem = div.querySelector("button");
-      rem.onclick = async () => {
-        if (await fetchJSON("api/remove", d) == "ok") {
-          document.location.reload();
-        } else {
-          alert("削除に失敗しました");
-        }
-      };
+      if (rem) {
+        rem.onclick = async () => {
+          if (await fetchJSON("api/remove", d) == "ok") {
+            document.location.reload();
+          } else {
+            alert("削除に失敗しました");
+          }
+        };
+      }
     }
   };
   load();

@@ -9,7 +9,12 @@ class MyServer extends Server {
       return null; // is not Internet3
     }
     if (path == "/api/list") {
-      return bbs.data;
+      return bbs.data.map(d => {
+        const o = {};
+        Object.assign(o, d);
+        o.removable = d.addr == remoteAddr;
+        return o;
+      });
     } else if (path == "/api/add") {
       req.addr = remoteAddr;
       bbs.data.push(req);
