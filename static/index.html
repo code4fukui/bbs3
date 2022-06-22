@@ -1,0 +1,113 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>BBS for Internet3 user</title>
+</head>
+
+<body>
+  <h1 id=title></h1>
+  <div id=container></div>
+
+  <div id=write class=writebox>
+    name: <input type=text id=inp_name><br>
+    <textarea id=inp_body></textarea><br>
+    <button id=btn_write>書き込む</button><br>
+  </div>
+
+  <footer>
+    <div>What is <a href=https://internet3.net/>Internet3</a></div>
+    <div>App: CC BY <a href=https://fukuno.jig.jp/3618>@taisukef</a> <a href=https://github.com/code4fukui/bbs3/>src on GitHub</a></div>
+  </footer>
+</body>
+  
+<script type="module">
+
+import { fetchJSON } from "https://js.sabae.cc/fetchJSON.js";
+import { enc } from "https://js.sabae.cc/enc.js";
+import { DateTime } from "https://code4fukui.github.io/day-es/DateTime.js";
+import { addLinkTag } from "https://js.sabae.cc/addLinkTag.js";
+
+title.textContent = document.title;
+
+window.onload = async () => {
+  const load = async () => {
+    const data = await fetchJSON("api/list");
+    if (!data) {
+      alert("データ取得に失敗しました");
+      return;
+    }
+    container.innerHTML = "";
+    for (const d of data) {
+      const div = document.createElement("div");
+      div.className = "bbsitem";
+      div.innerHTML = `<span class=date>${enc(d.date)}</span>
+       by <span class=name>${d.name}</span>
+       <span class=addr>${d.addr}</span>
+       <button class=remove>削除</button>
+        <div class=body>${addLinkTag(enc(d.body))}</div>`
+      container.appendChild(div);
+      const rem = div.querySelector("button");
+      rem.onclick = async () => {
+        if (await fetchJSON("api/remove", d) == "ok") {
+          document.location.reload();
+        } else {
+          alert("削除に失敗しました");
+        }
+      };
+    }
+  };
+  load();
+
+  btn_write.onclick = async () => {
+    const item = {
+      name: inp_name.value,
+      body: inp_body.value,
+      date: new DateTime(),
+    };
+    if (await fetchJSON("api/add", item) != "ok") {
+      alert("書き込みに失敗しました");
+      return;
+    }
+    inp_body.value = "";
+    await load();
+  };
+};
+</script>
+
+<style>
+body {
+  max-width: 50em !important;;
+}
+.bbsitem {
+  border-top: 1px solid gray;
+  padding-top: .5em;
+  margin: 1em;
+  word-wrap: break-word;
+}
+.bbsitem .body {
+  border: 1px solid black;
+  padding: .5em;
+}
+.bbsitem .addr {
+  font-size: 80%;
+}
+.bbsitem button {
+  font-size: 70%;
+  padding: .1em .4em;
+  margin: .1em;
+}
+.writebox {
+  border: 2px solid gray;
+  padding: 1em;
+  margin: 1em;
+}
+input, textarea {
+  width: 80%;
+}
+textarea {
+  height: 8em;
+}
+</style>
+
+<link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" type="text/css">
+</head>
+
+</html>
